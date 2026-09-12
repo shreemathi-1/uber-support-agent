@@ -1,6 +1,6 @@
 """
 FastAPI surface over pipeline.run: POST /chat, the escalation queue, and a health endpoint.
-No auth; CORS open to the Vite dev server only.
+No auth; CORS open to any localhost origin (the Vite dev server, whichever port it lands on).
 """
 import logging
 from contextlib import asynccontextmanager
@@ -25,7 +25,9 @@ async def lifespan(_: FastAPI):
 
 
 app = FastAPI(title="Uber_Support agent", lifespan=lifespan)
-app.add_middleware(CORSMiddleware, allow_origins=["http://localhost:5173"], allow_methods=["*"], allow_headers=["*"])
+# Any localhost port: Vite moves to 5174+ when 5173 is busy, and this API has no auth to protect anyway.
+app.add_middleware(CORSMiddleware, allow_origin_regex=r"^http://(localhost|127\.0\.0\.1):\d+$",
+                   allow_methods=["*"], allow_headers=["*"])
 
 
 @app.post("/chat", response_model=ChatResponse)

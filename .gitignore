@@ -8,3 +8,4 @@ data/chroma/*.lock
 frontend/node_modules/
 output/
 venv/
+frontend/dist/

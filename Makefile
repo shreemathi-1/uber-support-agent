@@ -1,7 +1,7 @@
 # Entry points for the Uber_Support agent. Every target is plain python; no framework.
 PY ?= venv/bin/python
 
-.PHONY: data index eval reproduce api test
+.PHONY: data index eval reproduce api test ui
 
 data:        ## split replies, sample the unlabelled golden set, validate (leakage check)
 	$(PY) -m scripts.split_replies
@@ -22,3 +22,6 @@ api:         ## dev server
 
 test:
 	$(PY) -m pytest tests/
+
+ui:          ## Vite dev server on :5173 (needs `make api` running on :8000)
+	cd frontend && npm install && npm run dev
