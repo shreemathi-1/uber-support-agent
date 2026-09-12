@@ -1,5 +1,5 @@
 # Entry points for the Uber_Support agent. Every target is plain python; no framework.
-PY ?= python
+PY ?= venv/bin/python
 
 .PHONY: data index eval reproduce api test
 

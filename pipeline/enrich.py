@@ -35,8 +35,8 @@ INSTRUCTIONS = """Rules:
 - sentiment is the customer's tone: negative, neutral, or positive.
 - urgency is high when the customer is stranded, mentions a safety issue, the matter is time-critical, or they are an angry repeat contact; medium for an unresolved problem; low for questions and feedback.
 - entities.is_repeat_contact is true if the message says they already contacted, DM'd, or emailed Uber and got no reply, or the earlier turn shows a prior message on the same issue.
-- entities.mentions_safety is true for accidents, assault, harassment, threats, dangerous driving, or feeling unsafe.
-- entities.mentions_legal is true for lawyers, lawsuits, police reports, or legal action.
+- entities.mentions_safety is true only for physical danger, harassment, assault, intoxication, reckless driving, or feeling unsafe. Vehicle smell or condition alone is false.
+- entities.mentions_legal is true only if the customer mentions police, a lawyer, legal action, a lawsuit, theft, fraud, a scam, or a regulator/consumer body. Anger, sarcasm, or "unacceptable" alone is false.
 - entities.amount is the numeric value if a currency amount is mentioned, else null. email, trip_date, city: copy from the message if present, else null."""
 
 FALLBACK = Enrichment(intent=Intent.OTHER, confidence=0.0, sentiment="neutral", urgency="low", entities=Entities())
@@ -63,7 +63,7 @@ def build_user_prompt(message: str, history: list[Turn]) -> str:
 
 
 def default_call_fn() -> CallFn:
-    return partial(llm.groq_chat, temperature=0.0, max_tokens=300, json_mode=True)
+    return partial(llm.groq_chat, temperature=0.0, max_tokens=300, json_mode=True, reasoning_effort="low")
 
 
 def enrich(message: str, history: list[Turn] | None = None, call_fn: CallFn | None = None) -> Enrichment:

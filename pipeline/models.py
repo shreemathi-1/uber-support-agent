@@ -47,16 +47,17 @@ class ChatRequest(BaseModel):
 
 
 class RetrievedPair(BaseModel):
-    """One historical customer→Uber exchange from the Chroma `pairs` collection."""
+    """One historical customer→Uber exchange from the Chroma `pairs` collection. score = cosine distance, lower is closer."""
     id: str
     customer_text: str
     reply_text: str
     intent: str
+    source: str  # "informative" | "deflection"
     score: float
 
 
 class RetrievedChunk(BaseModel):
-    """One help-centre article chunk from the Chroma `help` collection."""
+    """One help-centre article chunk from the Chroma `help` collection. score = cosine distance, lower is closer."""
     id: str
     title: str
     source_url: str
@@ -66,12 +67,9 @@ class RetrievedChunk(BaseModel):
 
 
 class Context(BaseModel):
-    """Everything the draft step needs: the message, its enrichment, and what retrieval found."""
-    message: str
-    history: list[Turn] = []
-    enrichment: Enrichment
-    pairs: list[RetrievedPair] = []
-    help_chunks: list[RetrievedChunk] = []
+    """What retrieval hands the drafter: similar historical exchanges and help-centre facts, nearest first."""
+    examples: list[RetrievedPair] = []
+    facts: list[RetrievedChunk] = []
 
 
 class ChatResponse(BaseModel):

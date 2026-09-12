@@ -4,7 +4,7 @@ Read this fully before doing anything. Then read `docs/PROJECT_PLAN.md` for the 
 
 ## What this project is
 
-Hiver SDE Intern take-home: an AI customer-support agent for **Uber_Support**, built from the Kaggle
+SDE Intern take-home: an AI customer-support agent for **Uber_Support**, built from the Kaggle
 "Customer Support on Twitter" dataset. It must (1) classify messages into intents, (2) draft a reply
 grounded in Uber's historical replies and hand-curated help-centre articles, (3) decide auto-handle
 vs escalate with a stated reason — and then **prove it works** with a golden set, an eval harness,
@@ -31,7 +31,7 @@ Rationale for the shape is in `docs/PROJECT_PLAN.md` §4.3. If you think it shou
 ## Tech stack (fixed, all free tier)
 
 - Python 3.11 · FastAPI · Pydantic v2 · Uvicorn
-- LLM: `groq` SDK. Primary `llama-3.3-70b-versatile`, fallback `llama-3.1-8b-instant`. Read model ids from env.
+- LLM: `groq` SDK. Primary `openai/gpt-oss-120b`, fallback `openai/gpt-oss-20b` (Llama 3.x ids were decommissioned by Groq on 2026-08-16). Read model ids from env.
 - Judge (eval only): Gemini Flash-Lite via `google-generativeai`. Never used in the pipeline.
 - Embeddings: `sentence-transformers/all-MiniLM-L6-v2`, CPU.
 - Vector store: ChromaDB, persistent dir `data/chroma/`.
@@ -49,11 +49,12 @@ If a task seems to need one of these, stop and ask.
 3. **Never scrape help.uber.com.** Help articles in `data/help_center/*.md` are hand-written paraphrases with `source_url` front matter.
 4. **No leakage.** The golden set and the retrieval corpus must not share `customer_tweet_id`s. `scripts/validate_data.py` checks this; keep it passing.
 5. **Deterministic where possible.** Enrich at `temperature=0`. Rules are pure functions. Seeds fixed in sampling and baselines.
-6. **Free-tier aware.** Groq 70B is ~10 RPM / 6k TPM. Batch scripts sleep between calls, back off exponentially on 429, and downgrade to 8B after 3 retries. Never run the golden set uncached in a tight loop.
+6. **Free-tier aware.** Groq free tier is tightly rate-limited (see console.groq.com/settings/limits for the current per-model numbers). Batch scripts sleep between calls, back off exponentially on 429, and downgrade to the fallback model after 3 retries. Never run the golden set uncached in a tight loop.
 7. **Cite what you borrow.** If you adapt a pattern from library docs, a blog, or a known snippet, add a one-line comment with the source and append it to `docs/BORROWED.md`.
 8. **Small files, clear names.** One responsibility per module. No file over ~200 lines without a reason. Type hints everywhere. Docstring at the top of every module saying what it does in two sentences.
 9. **Don't over-clean text.** Keep casing, emoji, punctuation, misspellings. Only strip `@mentions`, `t.co` links, HTML entities, `^XX` sign-offs, whitespace.
 10. **UI last.** Do not touch `frontend/` until `eval/results/` exists and `make reproduce` runs under 15 minutes.
+11. **Say manual steps to do next** Say manual steps to do if any before the next session with steps.
 
 ## Repo layout
 

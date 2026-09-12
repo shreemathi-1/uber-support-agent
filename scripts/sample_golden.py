@@ -5,10 +5,10 @@ Label columns are left empty on purpose: a human fills them (CLAUDE.md rule 2). 
 import csv
 import json
 import random
-import re
 from collections import Counter, defaultdict
 from pathlib import Path
 
+from pipeline.buckets import bucket_of
 from scripts.validate_data import is_english
 
 DATA = Path("data")
@@ -18,21 +18,6 @@ MIN_PER_BUCKET = 15
 MIN_CHARS = 20
 LABEL_COLUMNS = ["intent", "sentiment", "urgency", "escalate", "reason", "ideal_reply_notes", "labeller"]
 COLUMNS = ["id", "customer_tweet_id", "text", "history", *LABEL_COLUMNS]
-
-# Coverage buckets only. First match wins. Never written to the CSV.
-BUCKETS: list[tuple[str, re.Pattern]] = [
-    ("fare", re.compile(r"fare|charge|refund", re.I)),
-    ("trip", re.compile(r"driver|trip|ride", re.I)),
-    ("app", re.compile(r"\bapp\b|log ?in|\bcode\b|account", re.I)),
-    ("driver_side", re.compile(r"apply|background|earnings|bank", re.I)),
-    ("eats", re.compile(r"eats|order|food", re.I)),
-    ("lost", re.compile(r"lost|left|wallet|phone", re.I)),
-]
-
-
-def bucket_of(text: str) -> str:
-    return next((name for name, pat in BUCKETS if pat.search(text)), "other")
-
 
 def customer_tweet_ids() -> dict[tuple[str, str], str]:
     """(created_at, clean_text) -> tweet_id for customer tweets; thread turns carry no ids, this recovers them."""

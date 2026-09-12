@@ -32,7 +32,8 @@ INTENT_DEFINITIONS: dict[Intent, dict] = {
     },
     Intent.TRIP_OR_DRIVER_ISSUE: {
         "definition": "Problem during or around a ride: driver no-show, wrong route or drop-off, "
-                      "rude or unsafe driver behaviour, vehicle condition, long wait, stranded.",
+                      "rude or unsafe driver behaviour, vehicle condition, long wait, stranded, "
+                      "including wrong route, detour, wrong destination, or driver cancelling on arrival.",
         "examples": [
             "my driver just drove me to the department of air travel instead of the airport",
             "1 hour+ inside an old Altima that smells and has ripped stain seats, with an inexperienced driver",

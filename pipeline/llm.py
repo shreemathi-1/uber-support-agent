@@ -17,11 +17,11 @@ Messages = list[dict[str, str]]
 
 
 def primary_model() -> str:
-    return os.environ.get("PRIMARY_MODEL", "llama-3.3-70b-versatile")
+    return os.environ.get("PRIMARY_MODEL", "openai/gpt-oss-120b")
 
 
 def fallback_model() -> str:
-    return os.environ.get("FALLBACK_MODEL", "llama-3.1-8b-instant")
+    return os.environ.get("FALLBACK_MODEL", "openai/gpt-oss-20b")
 
 
 def _is_transient(exc: BaseException) -> bool:
@@ -33,8 +33,11 @@ def _is_transient(exc: BaseException) -> bool:
 # tenacity retry-with-backoff pattern from https://tenacity.readthedocs.io (see docs/BORROWED.md)
 @retry(retry=retry_if_exception(_is_transient), stop=stop_after_attempt(3),
        wait=wait_exponential(multiplier=2, min=2, max=30), reraise=True)
-def _call(client: Groq, model: str, messages: Messages, temperature: float, max_tokens: int, json_mode: bool) -> str:
-    extra = {"response_format": {"type": "json_object"}} if json_mode else {}
+def _call(client: Groq, model: str, messages: Messages, temperature: float, max_tokens: int, json_mode: bool,
+          reasoning_effort: str | None) -> str:
+    extra: dict = {"response_format": {"type": "json_object"}} if json_mode else {}
+    if reasoning_effort:  # gpt-oss models only; sent via extra_body because groq==0.15.0 predates the typed param
+        extra["extra_body"] = {"reasoning_effort": reasoning_effort}
     resp = client.chat.completions.create(
         model=model, messages=messages, temperature=temperature, max_tokens=max_tokens, **extra
     )
@@ -43,16 +46,16 @@ def _call(client: Groq, model: str, messages: Messages, temperature: float, max_
 
 
 def groq_chat(model: str, messages: Messages, temperature: float = 0.0, max_tokens: int = 300,
-              json_mode: bool = False) -> str:
+              json_mode: bool = False, reasoning_effort: str | None = None) -> str:
     """One chat completion. Signature (model, messages, ...) matches what cache.cached_llm passes to call_fn."""
     api_key = os.environ.get("GROQ_API_KEY")
     if not api_key:
         raise RuntimeError("GROQ_API_KEY is not set (put it in .env). Use CACHE_ONLY=1 to run without a key.")
     client = Groq(api_key=api_key)
     try:
-        return _call(client, model, messages, temperature, max_tokens, json_mode)
+        return _call(client, model, messages, temperature, max_tokens, json_mode, reasoning_effort)
     except Exception as exc:  # retries exhausted or a non-transient error
         if model == fallback_model():
             raise
         log.warning("model %s failed (%s: %s); falling back to %s once", model, type(exc).__name__, exc, fallback_model())
-        return _call(client, fallback_model(), messages, temperature, max_tokens, json_mode)
+        return _call(client, fallback_model(), messages, temperature, max_tokens, json_mode, reasoning_effort)

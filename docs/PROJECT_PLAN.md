@@ -52,7 +52,7 @@ BACKEND  FastAPI (Docker)             POST /chat  ·  GET /escalations  ·  GET 
             |            |            |
          ChromaDB     SQLite       MiniLM embedder            (all local)
             |
-LLM      Groq llama-3.3-70b (enrich, draft)  ·  Groq llama-3.1-8b (fallback, safety)  ·  Gemini Flash-Lite (judge)
+LLM      Groq gpt-oss-120b (enrich, draft)  ·  Groq gpt-oss-20b (fallback, safety)  ·  Gemini Flash-Lite (judge)
             
 OFFLINE  extract_uber.py → build_index.py → data/chroma/   ·   golden_set.csv   ·   help_center/*.md   ·   eval/run_eval.py
 ```
@@ -60,7 +60,7 @@ OFFLINE  extract_uber.py → build_index.py → data/chroma/   ·   golden_set.c
 ### 4.2 Pipeline, per message
 
 1. **Cache lookup** — SQLite `llm_cache`, key = SHA-256(model + messages). Every LLM call goes through it. `CACHE_ONLY=1` forbids network.
-2. **Enrich** — one Groq 70B call, JSON mode, temperature 0. Output:
+2. **Enrich** — one Groq gpt-oss-120b call, JSON mode, temperature 0. Output:
    ```json
    {"intent": "...", "confidence": 0.0-1.0,
     "sentiment": "negative|neutral|positive", "urgency": "low|medium|high",
@@ -72,8 +72,8 @@ OFFLINE  extract_uber.py → build_index.py → data/chroma/   ·   golden_set.c
    `safety → legal → amount > 10 → urgency == high → repeat_contact → confidence < 0.7 → intent ∉ AUTO_ALLOW`.
    `AUTO_ALLOW` is chosen from golden-set precision, not by hand. Escalated messages stop here (one LLM call total).
 4. **Retrieve** — MiniLM embeds the message. Chroma `pairs` collection, `where={"intent": X}`, top 5; `help` collection top 2; unfiltered fallback if < 3 hits.
-5. **Draft** — Groq 70B, temp 0.3, ≤120 tokens. Fixed shape: acknowledge · self-serve step (if help chunk matches) · ask one identifier · next step. Style rules learned from Uber's templates; channel rule: in-app chat, never "DM us". Post-process: strip URLs, ≤280 chars, prepend repeat-contact acknowledgement if flagged.
-6. **Safety check** — Groq 8B, `{safe, why}`. Flags promised refunds or invented policy. Fails closed (error → unsafe → escalate).
+5. **Draft** — Groq gpt-oss-120b, temp 0.3, ≤120 tokens. Fixed shape: acknowledge · self-serve step (if help chunk matches) · ask one identifier · next step. Style rules learned from Uber's templates; channel rule: in-app chat, never "DM us". Post-process: strip URLs, ≤280 chars, prepend repeat-contact acknowledgement if flagged.
+6. **Safety check** — Groq gpt-oss-20b, `{safe, why}`. Flags promised refunds or invented policy. Fails closed (error → unsafe → escalate).
 7. **Persist + respond** — `tickets` row (auto) or `escalations` row (escalate). `ChatResponse{intent, confidence, sentiment, urgency, entities, reply, action, reason, retrieved_ids, latency_ms}`.
 
 ### 4.3 Why this shape (answers to expected interview questions)
@@ -91,8 +91,8 @@ OFFLINE  extract_uber.py → build_index.py → data/chroma/   ·   golden_set.c
 |---|---|---|
 | Language | Python 3.11 | |
 | API | FastAPI + Uvicorn + Pydantic v2 | `/docs` for graders |
-| LLM pipeline | Groq `llama-3.3-70b-versatile` | free, no card; ~10 RPM / 6k TPM — cache everything |
-| LLM fallback/safety | Groq `llama-3.1-8b-instant` | same free tier, higher throughput |
+| LLM pipeline | Groq `openai/gpt-oss-120b` | free, no card; Llama 3.x decommissioned 2026-08-16 — cache everything |
+| LLM fallback/safety | Groq `openai/gpt-oss-20b` | same free tier, higher throughput |
 | LLM judge | Gemini `2.5-flash-lite` (or current Flash-Lite) | free; Pro models are paid-only; free-tier data may be used by Google |
 | Embeddings | `sentence-transformers/all-MiniLM-L6-v2` | CPU, 22 MB, offline |
 | Vector store | ChromaDB persistent dir | committed to repo |
@@ -104,7 +104,7 @@ OFFLINE  extract_uber.py → build_index.py → data/chroma/   ·   golden_set.c
 
 Not used, on purpose: LangChain, LangGraph, hosted vector DBs, paid APIs, ORMs.
 
-Plan B if 70B quota is painful: run enrich on 8B, compare macro-F1 on the golden set, switch if it holds (report the comparison).
+Plan B if 120B quota is painful: run enrich on gpt-oss-20b, compare macro-F1 on the golden set, switch if it holds (report the comparison).
 
 ## 6. Data
 
