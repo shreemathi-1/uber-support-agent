@@ -2,6 +2,7 @@
 Draw the 200-row unlabelled golden set from data/uber_threads.jsonl and remove those tweets from the retrieval corpus.
 Label columns are left empty on purpose: a human fills them (CLAUDE.md rule 2). Keyword buckets only steer coverage.
 """
+import argparse
 import csv
 import json
 import random
@@ -107,7 +108,43 @@ def write_golden(rows: list[dict]) -> None:
                         "text": r["text"], "history": r["history"]})
 
 
+def suggest() -> None:
+    """Write the enricher's predicted intent into `suggested_intent` (never `intent`). Labels stay untouched."""
+    from pipeline import llm
+    from pipeline.enrich import enrich
+    from pipeline.models import Turn
+
+    llm.batch_mode()
+    path = DATA / "golden_set.csv"
+    with path.open(newline="") as f:
+        reader = csv.DictReader(f)
+        fields, rows = list(reader.fieldnames or []), list(reader)
+    if "suggested_intent" not in fields:
+        fields.append("suggested_intent")
+    agree = labelled = 0
+    for i, r in enumerate(rows, 1):
+        history = [Turn(role="user", content=r["history"])] if r["history"] else []
+        r["suggested_intent"] = enrich(r["text"], history).intent.value
+        if r["intent"].strip():
+            labelled += 1
+            agree += r["intent"].strip() == r["suggested_intent"]
+        print(f"\r{i}/{len(rows)}", end="", flush=True)
+    with path.open("w", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=fields)
+        w.writeheader()
+        w.writerows(rows)
+    print(f"\nsuggested_intent written for {len(rows)} rows")
+    if labelled:
+        print(f"labelled rows: {labelled}, agreement with suggestion: {agree}/{labelled} "
+              f"(override rate {1 - agree / labelled:.0%})")
+
+
 def main() -> None:
+    ap = argparse.ArgumentParser(description=__doc__)
+    ap.add_argument("--suggest", action="store_true", help="fill suggested_intent from the enricher; no resampling")
+    if ap.parse_args().suggest:
+        suggest()
+        return
     rows = labelled_golden()
     if rows is not None:
         print("golden_set.csv already has labels: keeping it, only re-applying corpus removal (CLAUDE.md rule 2)")

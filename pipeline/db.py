@@ -1,7 +1,8 @@
 """
-SQLite access for the app: one connection factory and one schema initialiser.
-Tables: tickets (auto-handled), escalations (routed to a human), llm_cache (every LLM call).
+SQLite access for the app: connection factory, schema, and the handful of queries run.py and the API need.
+Tables: tickets (every request), escalations (queue for humans), llm_cache (every LLM call).
 """
+import json
 import os
 import sqlite3
 from pathlib import Path
@@ -28,6 +29,7 @@ CREATE TABLE IF NOT EXISTS tickets (
 
 CREATE TABLE IF NOT EXISTS escalations (
     id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    ticket_id       INTEGER NOT NULL REFERENCES tickets(id),
     conversation_id TEXT NOT NULL,
     created_at      TEXT NOT NULL DEFAULT (datetime('now')),
     message         TEXT NOT NULL,
@@ -35,6 +37,8 @@ CREATE TABLE IF NOT EXISTS escalations (
     urgency         TEXT NOT NULL,
     reason          TEXT NOT NULL,
     entities_json   TEXT NOT NULL,
+    draft           TEXT,
+    retrieved_ids   TEXT NOT NULL DEFAULT '[]',
     status          TEXT NOT NULL DEFAULT 'open'
 );
 
@@ -66,3 +70,47 @@ def init_db() -> None:
     """Create all tables if they do not exist. Safe to call repeatedly."""
     with get_conn() as conn:
         conn.executescript(SCHEMA)
+
+
+def _insert(table: str, row: dict) -> int:
+    cols = ", ".join(row)
+    marks = ", ".join("?" for _ in row)
+    with get_conn() as conn:
+        cur = conn.execute(f"INSERT INTO {table} ({cols}) VALUES ({marks})", tuple(row.values()))
+        return int(cur.lastrowid)
+
+
+def insert_ticket(row: dict) -> int:
+    return _insert("tickets", row)
+
+
+def insert_escalation(row: dict) -> int:
+    return _insert("escalations", row)
+
+
+def set_ticket_reply(ticket_id: int, reply: str) -> None:
+    with get_conn() as conn:
+        conn.execute("UPDATE tickets SET reply = ? WHERE id = ?", (reply, ticket_id))
+
+
+def list_escalations(status: str = "open") -> list[dict]:
+    with get_conn() as conn:
+        rows = conn.execute("SELECT * FROM escalations WHERE status = ? ORDER BY id DESC", (status,)).fetchall()
+    out = []
+    for r in rows:
+        d = dict(r)
+        d["entities"] = json.loads(d.pop("entities_json"))
+        d["retrieved_ids"] = json.loads(d["retrieved_ids"])
+        out.append(d)
+    return out
+
+
+def resolve_escalation(escalation_id: int) -> bool:
+    with get_conn() as conn:
+        cur = conn.execute("UPDATE escalations SET status = 'resolved' WHERE id = ? AND status = 'open'", (escalation_id,))
+        return cur.rowcount == 1
+
+
+def count(table: str) -> int:
+    with get_conn() as conn:
+        return int(conn.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0])

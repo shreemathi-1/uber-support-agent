@@ -13,6 +13,9 @@ Messages = list[dict[str, str]]
 CallFn = Callable[[str, Messages], str]
 
 
+STATS = {"hits": 0, "misses": 0}  # process-wide counters; run.py logs the per-request delta
+
+
 class CacheMissError(RuntimeError):
     """Raised on a cache miss when CACHE_ONLY=1. Means reproduction would need the network."""
 
@@ -33,10 +36,14 @@ def cached_llm(model: str, messages: Messages, call_fn: CallFn) -> str:
     with get_conn() as conn:
         row = conn.execute("SELECT response FROM llm_cache WHERE key = ?", (key,)).fetchone()
     if row is not None:
+        STATS["hits"] += 1
         return row["response"]
+    STATS["misses"] += 1
     if cache_only():
         raise CacheMissError(f"CACHE_ONLY=1 and no cached response for model={model} key={key[:12]}")
     response = call_fn(model, messages)
+    if not response.strip():  # never cache an empty completion (token budget eaten by reasoning, transient error)
+        return response
     with get_conn() as conn:
         conn.execute(
             "INSERT OR REPLACE INTO llm_cache (key, model, messages_json, response) VALUES (?, ?, ?, ?)",

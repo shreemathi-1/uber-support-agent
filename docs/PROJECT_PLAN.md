@@ -93,7 +93,7 @@ OFFLINE  extract_uber.py → build_index.py → data/chroma/   ·   golden_set.c
 | API | FastAPI + Uvicorn + Pydantic v2 | `/docs` for graders |
 | LLM pipeline | Groq `openai/gpt-oss-120b` | free, no card; Llama 3.x decommissioned 2026-08-16 — cache everything |
 | LLM fallback/safety | Groq `openai/gpt-oss-20b` | same free tier, higher throughput |
-| LLM judge | Gemini `2.5-flash-lite` (or current Flash-Lite) | free; Pro models are paid-only; free-tier data may be used by Google |
+| LLM judge | Gemini `3.5-flash-lite` (2.5 retired for new users, Sep 2026) | free; Pro models are paid-only; free-tier data may be used by Google |
 | Embeddings | `sentence-transformers/all-MiniLM-L6-v2` | CPU, 22 MB, offline |
 | Vector store | ChromaDB persistent dir | committed to repo |
 | Storage | SQLite (stdlib) | tickets, escalations, llm_cache |

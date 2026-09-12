@@ -35,8 +35,7 @@ def test_system_prompt_lists_every_intent_and_example() -> None:
     prompt = build_system_prompt()
     for intent, spec in INTENT_DEFINITIONS.items():
         assert f"- {intent.value}:" in prompt
-        for example in spec["examples"]:
-            assert example in prompt
+        assert min(spec["examples"], key=len) in prompt  # one example per intent, the shortest (decision #41)
     assert "JSON only" in prompt
 
 
@@ -79,3 +78,21 @@ def test_enrich_second_call_is_a_cache_hit() -> None:
     enrich("same message", call_fn=fake)
     enrich("same message", call_fn=fake)
     assert len(calls) == 1
+
+
+def test_daily_quota_429_is_not_transient_but_minute_429_is() -> None:
+    import httpx
+    from groq import RateLimitError
+    from pipeline.llm import _is_daily_quota, _is_transient
+    resp = httpx.Response(429, request=httpx.Request("POST", "https://api.groq.com"))
+    daily = RateLimitError("Rate limit reached ... on tokens per day (TPD): Limit 200000", response=resp, body=None)
+    minute = RateLimitError("Rate limit reached ... on requests per minute (RPM)", response=resp, body=None)
+    assert _is_daily_quota(daily) and not _is_transient(daily)
+    assert not _is_daily_quota(minute) and _is_transient(minute)
+
+
+def test_enrich_model_param_changes_cache_key() -> None:
+    fake, calls = make_fake([GOOD, GOOD])
+    enrich("same message", call_fn=fake, model="model-a")
+    enrich("same message", call_fn=fake, model="model-b")
+    assert len(calls) == 2

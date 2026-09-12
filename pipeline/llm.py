@@ -16,6 +16,12 @@ log = logging.getLogger(__name__)
 Messages = list[dict[str, str]]
 
 
+def batch_mode() -> None:
+    """Batch scripts call this first: the API runs with RATE_SLEEP=0, but a golden-set loop at 0 hits 429s and burns retries."""
+    if os.environ.get("RATE_SLEEP", "2") == "0":
+        os.environ["RATE_SLEEP"] = "2"
+
+
 def primary_model() -> str:
     return os.environ.get("PRIMARY_MODEL", "openai/gpt-oss-120b")
 
@@ -24,7 +30,17 @@ def fallback_model() -> str:
     return os.environ.get("FALLBACK_MODEL", "openai/gpt-oss-20b")
 
 
+class DailyQuotaExceeded(RuntimeError):
+    """The model's per-day token limit is spent. Not retried and not downgraded: a silent model change mid-eval is worse than stopping."""
+
+
+def _is_daily_quota(exc: BaseException) -> bool:
+    return isinstance(exc, RateLimitError) and ("per day" in str(exc).lower() or "tpd" in str(exc).lower())
+
+
 def _is_transient(exc: BaseException) -> bool:
+    if _is_daily_quota(exc):
+        return False
     if isinstance(exc, (RateLimitError, APIConnectionError)):
         return True
     return isinstance(exc, APIStatusError) and exc.status_code >= 500
@@ -55,6 +71,8 @@ def groq_chat(model: str, messages: Messages, temperature: float = 0.0, max_toke
     try:
         return _call(client, model, messages, temperature, max_tokens, json_mode, reasoning_effort)
     except Exception as exc:  # retries exhausted or a non-transient error
+        if _is_daily_quota(exc):
+            raise DailyQuotaExceeded(f"{model}: daily token limit reached; progress is cached, rerun the same command after the reset") from exc
         if model == fallback_model():
             raise
         log.warning("model %s failed (%s: %s); falling back to %s once", model, type(exc).__name__, exc, fallback_model())

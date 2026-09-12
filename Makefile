@@ -12,11 +12,10 @@ index:       ## build data/chroma from pairs + help_center
 	$(PY) scripts/build_index.py
 
 eval:        ## golden set through baselines + system -> eval/results/
-	@echo TODO: eval/run_eval.py not written yet
 	$(PY) eval/run_eval.py
 
 reproduce:   ## same as eval, cache only, no API keys, must finish < 15 min
-	CACHE_ONLY=1 $(MAKE) eval
+	@start=$$(date +%s); CACHE_ONLY=1 $(PY) eval/run_eval.py; echo "reproduce took $$(( $$(date +%s) - start ))s"
 
 api:         ## dev server
 	uvicorn api.main:app --reload

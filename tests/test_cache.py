@@ -55,3 +55,10 @@ def test_cache_only_hit_is_served(monkeypatch: pytest.MonkeyPatch) -> None:
     cached_llm("m", MSGS, lambda m, ms: "reply-1")
     monkeypatch.setenv("CACHE_ONLY", "1")
     assert cached_llm("m", MSGS, lambda m, ms: "should-not-run") == "reply-1"
+
+
+def test_empty_response_is_not_cached() -> None:
+    answers = iter(["", "reply-2"])
+    fn = lambda m, ms: next(answers)
+    assert cached_llm("m", MSGS, fn) == ""
+    assert cached_llm("m", MSGS, fn) == "reply-2"

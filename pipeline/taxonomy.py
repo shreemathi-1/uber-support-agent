@@ -22,8 +22,8 @@ class Intent(str, Enum):
 
 INTENT_DEFINITIONS: dict[Intent, dict] = {
     Intent.FARE_DISPUTE: {
-        "definition": "Customer disputes a charge: wrong fare, double charge, cancellation fee, "
-                      "surge, tip, or asks for money back for a completed or cancelled trip.",
+        "definition": "Disputes a charge: wrong fare, double charge, cancellation fee, surge, tip, "
+                      "or wants money back for a trip.",
         "examples": [
             "you need to correct false charges from a trip in Lexington KY on Saturday. I want my $13 back",
             "I accidentally started trip but rider never got in the car & I don't know how to get the charge refunded",
@@ -31,9 +31,8 @@ INTENT_DEFINITIONS: dict[Intent, dict] = {
         "ask_for": "the trip date and city so the fare can be reviewed",
     },
     Intent.TRIP_OR_DRIVER_ISSUE: {
-        "definition": "Problem during or around a ride: driver no-show, wrong route or drop-off, "
-                      "rude or unsafe driver behaviour, vehicle condition, long wait, stranded, "
-                      "including wrong route, detour, wrong destination, or driver cancelling on arrival.",
+        "definition": "Problem with a ride: driver no-show, wrong route, detour, wrong destination, "
+                      "driver cancelling on arrival, rude or unsafe driver, vehicle condition, long wait, stranded.",
         "examples": [
             "my driver just drove me to the department of air travel instead of the airport",
             "1 hour+ inside an old Altima that smells and has ripped stain seats, with an inexperienced driver",
@@ -42,16 +41,16 @@ INTENT_DEFINITIONS: dict[Intent, dict] = {
     },
     Intent.APP_OR_ACCOUNT_ISSUE: {
         "definition": "Cannot use the app or account: login, verification codes, app errors, "
-                      "payment method not working, account locked or suspended.",
+                      "payment method failing, account locked.",
         "examples": [
             "wtf is this.. every time I try to use the app it gives me this crap",
             "I'm not getting your texts",
         ],
-        "ask_for": "the email on the account and the device/app version",
+        "ask_for": "the email on the account",
     },
     Intent.DRIVER_ONBOARDING_OR_EARNINGS: {
-        "definition": "Message from a driver or applicant: signup status, background check, "
-                      "document upload, payouts, bank details, earnings not received.",
+        "definition": "From a driver or applicant: signup status, background check, documents, "
+                      "payouts, bank details, missing earnings.",
         "examples": [
             "I've been applying with Uber for 1 1/2 month to be a driver. I haven't any updates yet!",
             "I forgot to change my bank account information and my earnings has already cashed out. What do I do?",
@@ -59,8 +58,8 @@ INTENT_DEFINITIONS: dict[Intent, dict] = {
         "ask_for": "the email used on the driver application",
     },
     Intent.UBER_EATS: {
-        "definition": "Anything about a food delivery order: missing or wrong items, late or "
-                      "never delivered, delivery area, promo not applied on Eats.",
+        "definition": "Food delivery order: missing or wrong items, late or never delivered, "
+                      "delivery area, Eats promo not applied.",
         "examples": [
             "Welp... I guess that's one bibimbap order I'm never gonna receive",
             "do you also support ubereats singapore? im reaching out here bec the support there is useless",
@@ -68,16 +67,16 @@ INTENT_DEFINITIONS: dict[Intent, dict] = {
         "ask_for": "the order number or the email on the Eats account",
     },
     Intent.LOST_ITEM: {
-        "definition": "Customer left something in a vehicle and wants it back or to contact the driver.",
+        "definition": "Left something in a vehicle; wants it back or to reach the driver.",
         "examples": [
             "left my phone in the back seat of my ride 20 minutes ago, how do I reach the driver",
             "driver has my wallet, I've called twice no answer",
         ],
-        "ask_for": "the trip date and the item description",
+        "ask_for": "the trip date",
     },
     Intent.POLICY_OR_INFO_QUESTION: {
-        "definition": "General question with no specific incident: how pricing works, ride pass "
-                      "eligibility, availability in a city, driver requirements, promotions.",
+        "definition": "General question, no incident: pricing, ride pass, city availability, "
+                      "driver requirements, promotions.",
         "examples": [
             "how do I get the ride pass, my friend has it and I don't",
             "is Uber available in Coimbatore yet?",
@@ -101,4 +100,5 @@ AUTO_ALLOW: set[Intent] = {
     Intent.DRIVER_ONBOARDING_OR_EARNINGS,
     Intent.APP_OR_ACCOUNT_ISSUE,
     Intent.LOST_ITEM,
+    Intent.OTHER,  # canned reply in run.py, no draft: escalating "thanks" wastes a specialist
 }

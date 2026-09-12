@@ -14,3 +14,5 @@ matplotlib==3.10.0
 pytest==8.3.4
 # chromadb 0.6.3 calls posthog.capture with the pre-6.0 signature; 6.x logs an error on every call
 posthog==5.4.0
+# prompt token measurement only (scripts/measure_prompt.py)
+tiktoken==0.14.0

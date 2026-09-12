@@ -10,6 +10,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))  # so `python scripts/eval_intents.py` finds `pipeline`
 
+from pipeline import llm  # noqa: E402
 from pipeline.cache import CacheMissError  # noqa: E402
 from pipeline.enrich import enrich
 from pipeline.models import Enrichment, Turn
@@ -30,6 +31,8 @@ def run_rows(rows: list[dict]) -> list[Enrichment]:
             out.append(enrich(row["text"], history_of(row)))
         except CacheMissError as err:
             sys.exit(f"CACHE_ONLY=1 and row {row['id']} is not cached: {err}")
+        except llm.DailyQuotaExceeded as err:
+            sys.exit(f"stopped at row {row['id']}: {err}")
         print(f"\r{i}/{len(rows)}", end="", file=sys.stderr)
     print(file=sys.stderr)
     return out
@@ -75,6 +78,7 @@ def evaluate(rows: list[dict]) -> None:
 
 
 def main() -> None:
+    llm.batch_mode()
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--n", type=int, default=20, help="rows for the smoke test when nothing is labelled")
     args = ap.parse_args()
