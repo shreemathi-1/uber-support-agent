@@ -1,0 +1,32 @@
+{
+  "rows": {
+    "tweets": 125631,
+    "pairs": 53651,
+    "threads": 40886
+  },
+  "date_range_all_uber_related_tweets": [
+    "2014-05-27",
+    "2017-12-03"
+  ],
+  "date_range_uber_support_authored_tweets": [
+    "2014-12-20",
+    "2017-12-03"
+  ],
+  "top15_template_share": 0.16,
+  "near_duplicate_share_top30_normalised": 0.2583,
+  "customer_length_histogram": {
+    "0-29": 2996,
+    "30-59": 7918,
+    "60-89": 9802,
+    "90-119": 13105,
+    "120-149": 12394,
+    "150-179": 2479,
+    "180-209": 1748,
+    "210-239": 1413,
+    "240-269": 1509,
+    "270-+": 287
+  },
+  "share_under_8_chars": 0.0,
+  "english_share": 0.9974,
+  "golden_leakage_ids": []
+}

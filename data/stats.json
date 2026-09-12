@@ -1,0 +1,42 @@
+{
+  "total_rows_in_csv": 2811774,
+  "uber_related_tweets": 125631,
+  "uber_replies": 56267,
+  "customer_tweets": 69297,
+  "pairs": 55720,
+  "unique_pairs": 53651,
+  "threads": 40886,
+  "date_range": [
+    "Fri Apr 15 10:58:51 +0000 2016",
+    "Wed Sep 27 21:34:27 +0000 2017"
+  ],
+  "top15_template_share": 0.16,
+  "top_15_uber_reply_templates": {
+    "Here to help. Send us a note at so our team can connect": 1925,
+    "Here to help! Send us a note here, and our team will follow up": 719,
+    "We're sorry to hear this was your experience. Contact us via and we'll be in touch": 650,
+    "Sorry for the trouble! Send us a note here, and our team will be in touch": 606,
+    "We're here to help! Send us a DM with your email address so we can connect": 588,
+    "We're here to help! Send us a DM with your email address so we can assist": 578,
+    "Here to help! Send us a note via so our team can connect": 518,
+    "We're here to help! Send us a DM with your email address and more details so we can follow up": 497,
+    "Here to help! Follow up here; and our team will connect right away": 489,
+    "We take this very seriously. Please send us a DM with your email address so we can connect ASAP": 485,
+    "We've been in touch via DM!": 421,
+    "Here to help! Send us a note at so our team can connect": 421,
+    "Here to help! Send us a note here; and our team will be able to assist!": 386,
+    "Here to help! Please send us a note at and we'll be happy to look into this for you": 369,
+    "Hi there! Please reach out to and fill out the 4 boxes at the bottom so we can get in touch": 369
+  },
+  "reply_split": {
+    "deflection": 46350,
+    "informative": 7301,
+    "informative_share": 0.1361
+  },
+  "golden_set": {
+    "rows": 200,
+    "with_history": 54,
+    "seed": 42,
+    "removed_from_corpus": 0
+  }
+}
