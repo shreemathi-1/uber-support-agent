@@ -104,3 +104,11 @@ class SimpleBaseline:
         reason = keyword_escalate(row["text"])
         return {"intent": str(self.model.predict([row["text"]])[0]), "escalate": reason is not None,
                 "reason": reason or "auto", "reply": nearest_reply(row["text"])}
+
+
+def predict_one(message: str) -> dict:
+    """The simple baseline's answer for one message, for the trace. Loads the pickle each call (small); never fits."""
+    if not MODEL_PATH.exists():
+        return {"available": False, "why": f"{MODEL_PATH} missing; run make eval to fit it"}
+    baseline = SimpleBaseline(pickle.loads(MODEL_PATH.read_bytes()))
+    return {"available": True, **baseline.predict({"text": message})}

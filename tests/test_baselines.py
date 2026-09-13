@@ -4,6 +4,7 @@ from pathlib import Path
 
 import pytest
 
+from baselines import simple, trivial
 from baselines.simple import keyword_escalate
 from baselines.trivial import TrivialBaseline
 
@@ -24,6 +25,23 @@ def test_trivial_uses_majority_intent_and_most_common_reply(deflection_file: Pat
 
 def test_trivial_defaults_to_other_without_labels(deflection_file: Path) -> None:
     assert TrivialBaseline([], deflection_file).predict({"text": "x"})["intent"] == "other"
+
+
+def test_trivial_predict_one_reads_files_or_reports_unavailable(deflection_file: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(trivial, "DEFLECTION_PATH", deflection_file)
+    monkeypatch.setattr(trivial, "GOLDEN_PATH", tmp_path / "no_golden.csv")
+    trivial._default.cache_clear()
+    assert trivial.predict_one("anything") == {"available": True, "intent": "other", "escalate": True,
+                                               "reason": "trivial_always", "reply": "Send us a DM"}
+    monkeypatch.setattr(trivial, "DEFLECTION_PATH", tmp_path / "missing.jsonl")
+    trivial._default.cache_clear()
+    assert trivial.predict_one("anything")["available"] is False
+
+
+def test_simple_predict_one_is_unavailable_without_the_pickle(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(simple, "MODEL_PATH", tmp_path / "missing.pkl")
+    out = simple.predict_one("charged twice")
+    assert out["available"] is False and "make eval" in out["why"]
 
 
 @pytest.mark.parametrize(

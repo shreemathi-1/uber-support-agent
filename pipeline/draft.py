@@ -57,16 +57,28 @@ def build_user_prompt(message: str, history: list[Turn], enrichment: Enrichment,
     return "\n".join(lines)
 
 
-def postprocess(text: str, is_repeat_contact: bool) -> str:
-    text = URL_RE.sub("", text)
-    text = re.sub(r"\s+", " ", text).strip()
+def postprocess_with_notes(text: str, is_repeat_contact: bool) -> tuple[str, list[str]]:
+    """(final text, names of the steps that changed it). The notes go into the trace; the text goes to the customer."""
+    notes: list[str] = []
+    stripped = URL_RE.sub("", text)
+    if stripped != text:
+        notes.append("stripped_urls")
+    text = re.sub(r"\s+", " ", stripped).strip()
+    if text != stripped:
+        notes.append("collapsed_whitespace")
     if is_repeat_contact and "again" not in text.lower():
         text = REPEAT_PREFIX + text
+        notes.append("added_repeat_contact_prefix")
     if len(text) > MAX_CHARS:
         cut = text[:MAX_CHARS]
         end = max(cut.rfind("."), cut.rfind("!"), cut.rfind("?"))
         text = cut[: end + 1] if end > 0 else cut.rstrip()
-    return text
+        notes.append(f"cut_to_{MAX_CHARS}_chars")
+    return text, notes
+
+
+def postprocess(text: str, is_repeat_contact: bool) -> str:
+    return postprocess_with_notes(text, is_repeat_contact)[0]
 
 
 def default_call_fn() -> CallFn:
@@ -74,10 +86,14 @@ def default_call_fn() -> CallFn:
     return partial(llm.groq_chat, temperature=0.3, max_tokens=400, json_mode=False, reasoning_effort="low")
 
 
-def draft(message: str, history: list[Turn], enrichment: Enrichment, context: Context, call_fn: CallFn | None = None) -> str:
+def draft_raw(message: str, history: list[Turn], enrichment: Enrichment, context: Context, call_fn: CallFn | None = None) -> str:
+    """The model's reply before post-processing. run.py calls this so the trace can show raw next to final."""
     messages = [
         {"role": "system", "content": build_system_prompt()},
         {"role": "user", "content": build_user_prompt(message, history, enrichment, context)},
     ]
-    raw = cached_llm(llm.primary_model(), messages, call_fn or default_call_fn())
-    return postprocess(raw, enrichment.entities.is_repeat_contact)
+    return cached_llm(llm.primary_model(), messages, call_fn or default_call_fn())
+
+
+def draft(message: str, history: list[Turn], enrichment: Enrichment, context: Context, call_fn: CallFn | None = None) -> str:
+    return postprocess(draft_raw(message, history, enrichment, context, call_fn), enrichment.entities.is_repeat_contact)
