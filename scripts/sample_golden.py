@@ -108,10 +108,23 @@ def write_golden(rows: list[dict]) -> None:
                         "text": r["text"], "history": r["history"]})
 
 
+SUGGESTED_COLUMNS = ["suggested_intent", "suggested_sentiment", "suggested_urgency", "suggested_escalate", "suggested_reason"]
+
+
+def _write_rows(path: Path, fields: list[str], rows: list[dict]) -> None:
+    with path.open("w", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=fields)
+        w.writeheader()
+        w.writerows(rows)
+
+
 def suggest() -> None:
-    """Write the enricher's predicted intent into `suggested_intent` (never `intent`). Labels stay untouched."""
-    from pipeline import llm
+    """Fill the `suggested_*` columns from the enricher + rules (never the ground-truth columns, CLAUDE.md rule 2).
+    Only rows with an empty suggested column are enriched; a non-empty `suggested_intent` is kept as it was."""
+    from pipeline import llm, rules
+    from pipeline.cache import CacheMissError
     from pipeline.enrich import enrich
+    from pipeline.llm import DailyQuotaExceeded
     from pipeline.models import Turn
 
     llm.batch_mode()
@@ -119,29 +132,44 @@ def suggest() -> None:
     with path.open(newline="") as f:
         reader = csv.DictReader(f)
         fields, rows = list(reader.fieldnames or []), list(reader)
-    if "suggested_intent" not in fields:
-        fields.append("suggested_intent")
-    agree = labelled = 0
-    for i, r in enumerate(rows, 1):
+    fields += [c for c in SUGGESTED_COLUMNS if c not in fields]
+    todo = [r for r in rows if any(not r.get(c, "").strip() for c in SUGGESTED_COLUMNS)]
+    print(f"{len(todo)}/{len(rows)} rows have an empty suggested column; the rest are left as they are")
+    done = intent_changed = 0
+    for i, r in enumerate(todo, 1):
         history = [Turn(role="user", content=r["history"])] if r["history"] else []
-        r["suggested_intent"] = enrich(r["text"], history).intent.value
-        if r["intent"].strip():
-            labelled += 1
-            agree += r["intent"].strip() == r["suggested_intent"]
-        print(f"\r{i}/{len(rows)}", end="", flush=True)
-    with path.open("w", newline="") as f:
-        w = csv.DictWriter(f, fieldnames=fields)
-        w.writeheader()
-        w.writerows(rows)
-    print(f"\nsuggested_intent written for {len(rows)} rows")
+        try:
+            e = enrich(r["text"], history)
+        except (CacheMissError, DailyQuotaExceeded) as err:  # keep what is filled so far; rerun the same command later
+            _write_rows(path, fields, rows)
+            raise SystemExit(f"\nstopped at {i}/{len(todo)} after saving progress: {err}")
+        reason = rules.evaluate(e)
+        if r.get("suggested_intent", "").strip():
+            intent_changed += r["suggested_intent"].strip() != e.intent.value
+        else:
+            r["suggested_intent"] = e.intent.value
+        r["suggested_sentiment"], r["suggested_urgency"] = e.sentiment, e.urgency
+        r["suggested_escalate"], r["suggested_reason"] = str(reason is not None), reason or "none"
+        done += 1
+        if i % 20 == 0:
+            _write_rows(path, fields, rows)
+        print(f"\r{i}/{len(todo)}", end="", flush=True)
+    _write_rows(path, fields, rows)
+    blanks = sum(1 for r in rows for c in SUGGESTED_COLUMNS if not r.get(c, "").strip())
+    print(f"\nsuggested columns filled for {done} rows; blanks remaining in suggested columns: {blanks}")
+    if intent_changed:
+        print(f"note: the enricher now disagrees with the kept suggested_intent on {intent_changed} rows "
+              f"(suggested_escalate/reason follow the fresh enrichment)")
+    labelled = [r for r in rows if r["intent"].strip()]
     if labelled:
-        print(f"labelled rows: {labelled}, agreement with suggestion: {agree}/{labelled} "
-              f"(override rate {1 - agree / labelled:.0%})")
+        agree = sum(r["intent"].strip() == r["suggested_intent"] for r in labelled)
+        print(f"labelled rows: {len(labelled)}, agreement with suggestion: {agree}/{len(labelled)} "
+              f"(override rate {1 - agree / len(labelled):.0%})")
 
 
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--suggest", action="store_true", help="fill suggested_intent from the enricher; no resampling")
+    ap.add_argument("--suggest", action="store_true", help="fill empty suggested_* columns from the enricher + rules; no resampling")
     if ap.parse_args().suggest:
         suggest()
         return

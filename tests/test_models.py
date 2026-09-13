@@ -80,3 +80,16 @@ def test_chat_response_rejects_unknown_action() -> None:
             urgency="low", entities=Entities(), reply="", action="defer", reason="auto",
             retrieved_ids=[], latency_ms=0,
         )
+
+
+@pytest.mark.parametrize(
+    "raw,expected",
+    [("£4.25", 4.25), ("$13", 13.0), ("Rs 555", 555.0), ("1,000", 1000.0), ("", None), ("13", 13.0), (13.5, 13.5), (None, None)],
+)
+def test_entities_amount_accepts_currency_strings(raw, expected) -> None:
+    assert Entities(amount=raw).amount == expected
+
+
+def test_entities_amount_still_rejects_garbage() -> None:
+    with pytest.raises(ValidationError):
+        Entities(amount="4.2.5")

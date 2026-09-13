@@ -2,11 +2,14 @@
 Pydantic contracts shared by the pipeline, the API and the eval harness.
 Every stage passes one of these objects to the next; nothing else crosses a stage boundary.
 """
+import re
 from typing import Literal
 
 from pydantic import BaseModel, Field, field_validator
 
 from pipeline.taxonomy import Intent
+
+NON_NUMERIC = re.compile(r"[^\d.]")
 
 
 class Entities(BaseModel):
@@ -17,6 +20,19 @@ class Entities(BaseModel):
     mentions_safety: bool = False
     mentions_legal: bool = False
     is_repeat_contact: bool = False
+
+    @field_validator("amount", mode="before")
+    @classmethod
+    def _amount_from_currency_string(cls, v: object) -> object:
+        """The model sometimes returns "£4.25" or "Rs 555" despite the schema; keep the number, drop the symbol.
+        Done here rather than in the prompt so enrich cache keys do not change (DECISIONS.md #47)."""
+        if isinstance(v, str):
+            digits = NON_NUMERIC.sub("", v)
+            try:
+                return float(digits) if digits else None
+            except ValueError:  # e.g. "4.2.5": let the normal float error surface and the retry handle it
+                return v
+        return v
 
 
 class Enrichment(BaseModel):
