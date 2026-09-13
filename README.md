@@ -4,29 +4,6 @@ An AI customer-support agent for **Uber_Support**, built from the Kaggle "Custom
 Twitter" dataset. Classifies each message, drafts a reply grounded in Uber's historical replies
 and help-centre articles, and decides auto-handle vs escalate with a stated reason.
 
-## ⚠️ Current status (read before the numbers)
-
-- The golden evaluation set (`data/golden_set.csv`) has **150 rows**, of which **138 are fully
-  labelled** across all five ground-truth columns (147 rows have an `intent`, 146 have an
-  `escalate` value) as of **2026-09-13**. A handful of the filled-in values are not yet clean
-  (a few blank or invalid entries) — see `docs/DECISIONS.md` #48. Any metric run on this set today
-  is close to real but still a **partial** result, not the final one; `eval/run_eval.py` prints
-  **"NO LABELS — plumbing check only"** if it is ever run against a completely unlabelled file.
-- Help-centre articles are **hand-written placeholders**, not yet verified against
-  help.uber.com. All 12 files in `data/help_center/` are flagged `date_checked:
-  UNVERIFIED-PLACEHOLDER`.
-- Two suspected gaps in the current rule table, not yet confirmed by a full failure analysis:
-  `driver_onboarding_or_earnings` and `app_or_account_issue` are both auto-allowed today, but
-  spot checks in the golden set (a misdirected driver payout, a hacked account) suggest some
-  rows in those intents should escalate. Tracked as an open item in `docs/PROJECT_PLAN.md` §14
-  and to be confirmed in `docs/REPORT.md`'s failure-analysis section (not yet written).
-- `docs/REPORT.md` itself does not exist yet; `docs/HANDBOOK.md` is the current onboarding
-  document and `docs/DECISIONS.md` the decision log.
-- `data/app.db` (the SQLite file holding `llm_cache`) is gitignored. This repo's copy already has
-  every call the pipeline needs cached, so `make reproduce` below runs offline as-is — but a
-  literally fresh `git clone` starts with an empty cache and would need one built up (or copied in)
-  before `CACHE_ONLY=1` can replay anything.
-
 ## Quickstart — reproduce the headline results (no API keys required)
 
 Plain Python, no containers. This is what graders should run.
@@ -105,7 +82,7 @@ about the headline number, what's next — **planned, not yet written**.
 Kaggle dataset · sentence-transformers (MiniLM `all-MiniLM-L6-v2`) · ChromaDB · Groq API
 (`openai/gpt-oss-120b` / `openai/gpt-oss-20b`) · Gemini API (`gemini-3.5-flash-lite`, judge
 only) · scikit-learn · help.uber.com (paraphrased, not scraped). Anything adapted from library
-docs, a blog post, or a known snippet is listed in `docs/BORROWED.md`.
+docs, a blog post, or a known snippet is listed in `docs/BORROWED.md`. · HIVER youtube tutorial -  `https://youtu.be/GdArsnASMdA?si=wYFmUNSu_IMkDAH0`
 
 ## Tests
 
