@@ -1,6 +1,6 @@
 """
 Draw the 150-row unlabelled golden set from data/uber_threads.jsonl and remove those tweets from the retrieval corpus.
-Label columns are left empty on purpose: a human fills them (CLAUDE.md rule 2). Keyword buckets only steer coverage.
+Label columns are left empty on purpose: a human fills them (PROJECT_GUIDE.md rule 2). Keyword buckets only steer coverage.
 """
 import argparse
 import csv
@@ -119,7 +119,7 @@ def _write_rows(path: Path, fields: list[str], rows: list[dict]) -> None:
 
 
 def suggest() -> None:
-    """Fill the `suggested_*` columns from the enricher + rules (never the ground-truth columns, CLAUDE.md rule 2).
+    """Fill the `suggested_*` columns from the enricher + rules (never the ground-truth columns, PROJECT_GUIDE.md rule 2).
     Only rows with an empty suggested column are enriched; a non-empty `suggested_intent` is kept as it was."""
     from pipeline import llm, rules
     from pipeline.cache import CacheMissError
@@ -175,7 +175,7 @@ def main() -> None:
         return
     rows = labelled_golden()
     if rows is not None:
-        print("golden_set.csv already has labels: keeping it, only re-applying corpus removal (CLAUDE.md rule 2)")
+        print("golden_set.csv already has labels: keeping it, only re-applying corpus removal (PROJECT_GUIDE.md rule 2)")
     else:
         pool = candidates()
         rows = stratified_sample(pool, random.Random(SEED))

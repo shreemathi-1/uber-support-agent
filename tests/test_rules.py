@@ -48,7 +48,7 @@ def test_amount_at_limit_does_not_fire_and_env_overrides(monkeypatch: pytest.Mon
     assert rules.evaluate(enr(entities=Entities(amount=6.0))) == "amount_over"
 
 
-def test_rule_names_and_order_match_claude_md() -> None:
+def test_rule_names_and_order_match_project_guide() -> None:
     assert [name for name, _ in rules.RULES] == [
         "safety", "legal", "amount_over", "urgent", "repeat_contact", "low_confidence", "not_allowed"
     ]

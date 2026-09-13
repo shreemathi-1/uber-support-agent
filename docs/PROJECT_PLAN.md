@@ -174,7 +174,7 @@ Extraction is done (`stats.json` present). Manual data work is deferred; the pip
 
 | # | Task | Time |
 |---|---|---|
-| 1 | Claude Code session 1: scaffold, models, db, cache, tests, Makefile | 0.25 d |
+| 1 | Session 1: scaffold, models, db, cache, tests, Makefile | 0.25 d |
 | 2 | Session 2: `split_replies.py`, `validate_data.py`, `sample_golden.py` (creates an *unlabelled* 150-row file) | 0.25 d |
 | 3 | Session 3: `enrich.py` + `eval_intents.py`; smoke on 20 tweets | 0.5 d |
 | 4 | Session 4: `build_index.py`, `retrieve.py`, `peek_retrieval.py` | 0.25 d |
@@ -229,7 +229,7 @@ uber-support-agent/
 
 - [x] Run extraction (stats.json: 53,651 pairs, 40,886 threads)
 - [ ] Run reply split; record deflection vs informative counts
-- [ ] Claude Code sessions 1–6 (pipeline + harness on bootstrap data)
+- [ ] sessions 1–6 (pipeline + harness on bootstrap data)
 - [ ] 100-thread read → revise `taxonomy.py`
 - [ ] Replace all `UNVERIFIED-PLACEHOLDER` help articles
 - [ ] Line up second labeller

@@ -329,7 +329,7 @@ Until the golden set is labelled the harness prints **"NO LABELS — plumbing ch
 ## 13. Repository map
 
 ```
-CLAUDE.md                 standing instructions for AI-assisted sessions (architecture is fixed; hard rules)
+PROJECT_GUIDE.md          standing engineering instructions (architecture is fixed; hard rules)
 Makefile                  data · index · eval · reproduce · api · test · ui
 requirements.txt          pinned, Python 3.11, free-tier stack only
 .env.example              GROQ_API_KEY, GEMINI_API_KEY, model ids, CACHE_ONLY, AMOUNT_LIMIT, DB_PATH, RATE_SLEEP

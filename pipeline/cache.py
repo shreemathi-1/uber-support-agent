@@ -1,5 +1,5 @@
 """
-Content-addressed cache for every LLM call (CLAUDE.md rule 1).
+Content-addressed cache for every LLM call (PROJECT_GUIDE.md rule 1).
 Key = SHA-256 of model + JSON-dumped messages; CACHE_ONLY=1 turns a miss into an error instead of a network call.
 """
 import hashlib

@@ -18,8 +18,8 @@ make reproduce                      # CACHE_ONLY=1, replays every LLM call from 
 
 **Timed on a clean checkout (`rm -rf venv`, all steps above) on 2026-09-13: 6m48s end to end**
 (`venv` build + every `pip install`, real wall-clock via `time`) — well inside the 15-minute
-budget `CLAUDE.md` sets. No network access happens during `make reproduce` itself — see
-`pipeline/cache.py` and `CLAUDE.md` rule 1.
+budget `PROJECT_GUIDE.md` sets. No network access happens during `make reproduce` itself — see
+`pipeline/cache.py` and `PROJECT_GUIDE.md` rule 1.
 
 That same timed run surfaced a real, pre-existing gap worth knowing about: `make reproduce`
 currently exits early, a few seconds in, once it reaches the `simple` baseline — it needs 1,000

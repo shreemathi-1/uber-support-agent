@@ -1,6 +1,6 @@
-# CLAUDE.md — standing instructions for this repo
+# Project Guide — standing engineering instructions for this repo
 
-Read this fully before doing anything. Then read `docs/PROJECT_PLAN.md` for the architecture.
+Read this fully before starting work. Then read `docs/PROJECT_PLAN.md` for the architecture.
 
 ## What this project is
 
@@ -8,8 +8,8 @@ SDE Intern take-home: an AI customer-support agent for **Uber_Support**, built f
 "Customer Support on Twitter" dataset. It must (1) classify messages into intents, (2) draft a reply
 grounded in Uber's historical replies and hand-curated help-centre articles, (3) decide auto-handle
 vs escalate with a stated reason — and then **prove it works** with a golden set, an eval harness,
-two baselines, and a report. The proof is graded above the system. I will be asked to explain and
-modify every line of this code live, so keep it small and obvious.
+two baselines, and a report. The proof is graded above the system. Every line of this code needs to
+be explainable and modifiable live, so keep it small and obvious.
 
 ## Architecture (fixed — do not redesign)
 
@@ -26,7 +26,7 @@ cache lookup → enrich (LLM, JSON) → rules (no LLM) → retrieve (MiniLM + Ch
 - **Safety check**: Groq 8B, `{safe, why}`. Fails closed.
 - `pipeline/run.py` is the single entry point used by BOTH `api/main.py` and `eval/run_eval.py`.
 
-Rationale for the shape is in `docs/PROJECT_PLAN.md` §4.3. If you think it should change, say so in chat; do not silently change it.
+Rationale for the shape is in `docs/PROJECT_PLAN.md` §4.3. If it should change, say so and record why; do not silently change it.
 
 ## Tech stack (fixed, all free tier)
 
@@ -45,7 +45,7 @@ If a task seems to need one of these, stop and ask.
 ## Hard rules
 
 1. **Every LLM call goes through `pipeline/cache.py`.** Key = SHA-256 of model + JSON-dumped messages. When `CACHE_ONLY=1`, a cache miss raises — never hits the network. `make reproduce` must work with no API keys.
-2. **Never write labels into `data/golden_set.csv`.** It is hand-labelled by a human; that is a graded deliverable. You may create the empty sampled file and the tooling; you may not fill `intent`, `escalate`, `reason`, `urgency`, or `sentiment` columns.
+2. **Never write labels into `data/golden_set.csv`.** It is hand-labelled by a human; that is a graded deliverable. Tooling may create the empty sampled file; it may not fill `intent`, `escalate`, `reason`, `urgency`, or `sentiment` columns.
 3. **Never scrape help.uber.com.** Help articles in `data/help_center/*.md` are hand-written paraphrases with `source_url` front matter.
 4. **No leakage.** The golden set and the retrieval corpus must not share `customer_tweet_id`s. `scripts/validate_data.py` checks this; keep it passing.
 5. **Deterministic where possible.** Enrich at `temperature=0`. Rules are pure functions. Seeds fixed in sampling and baselines.
@@ -54,7 +54,7 @@ If a task seems to need one of these, stop and ask.
 8. **Small files, clear names.** One responsibility per module. No file over ~200 lines without a reason. Type hints everywhere. Docstring at the top of every module saying what it does in two sentences.
 9. **Don't over-clean text.** Keep casing, emoji, punctuation, misspellings. Only strip `@mentions`, `t.co` links, HTML entities, `^XX` sign-offs, whitespace.
 10. **UI last.** Do not touch `frontend/` until `eval/results/` exists and `make reproduce` runs under 15 minutes.
-11. **Say manual steps to do next** Say manual steps to do if any before the next session with steps.
+11. **Say manual steps to do next.** Say manual steps to do if any before the next session with steps.
 
 ## Repo layout
 
@@ -124,7 +124,7 @@ safety → legal → amount_over (> AMOUNT_LIMIT) → urgent (urgency == high) �
 
 ## Working style
 
-- Before writing code for a session, restate the task in 2–3 lines and list the files you will touch. Wait for a go if the list is longer than 4 files.
+- Before starting a session's work, restate the task in 2–3 lines and list the files you will touch. Confirm before touching more than 4 files.
 - After writing, run the relevant script or test and paste the real output. Do not claim something works without running it.
 - When something is ambiguous (threshold, intent boundary, prompt wording), propose a default and flag it as a decision for `docs/DECISIONS.md` rather than deciding silently.
 - Prefer editing an existing file over creating a new one.
