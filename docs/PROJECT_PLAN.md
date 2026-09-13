@@ -143,7 +143,7 @@ The enrich prompt is generated from this file, so revising intents after the 100
 
 ## 8. Golden set
 
-- 200 rows, stratified across intents (oversample rare ones), sampled from `uber_threads.jsonl` with context.
+- 150 rows, stratified across intents (oversample rare ones), sampled from `uber_threads.jsonl` with context.
 - Columns: `text, history, intent, sentiment, urgency, escalate (y/n), reason, ideal_reply_notes`.
 - Labelled by me; a second labeller does 50 rows → Cohen's kappa for inter-annotator agreement.
 - Labelling note in README: sampling method, edge-case rules, disagreements and how resolved.
@@ -161,7 +161,7 @@ The enrich prompt is generated from this file, so revising intents after the 100
 ## 10. Known traps for the "misleading headline number" section
 
 - Similarity to Uber's real reply rewards "DM us your email" for everything.
-- Golden set is small (200) and self-labelled; kappa on 50 is the only external check.
+- Golden set is small (150) and self-labelled; kappa on 50 is the only external check.
 - Escalation recall is measured only on conditions I enumerated.
 - Judge and drafter are both LLMs; agreement with 40 human scores is thin evidence.
 - Retrieval corpus and golden set are from the same period; distribution shift not tested.
@@ -175,13 +175,13 @@ Extraction is done (`stats.json` present). Manual data work is deferred; the pip
 | # | Task | Time |
 |---|---|---|
 | 1 | Claude Code session 1: scaffold, models, db, cache, tests, Makefile | 0.25 d |
-| 2 | Session 2: `split_replies.py`, `validate_data.py`, `sample_golden.py` (creates an *unlabelled* 200-row file) | 0.25 d |
+| 2 | Session 2: `split_replies.py`, `validate_data.py`, `sample_golden.py` (creates an *unlabelled* 150-row file) | 0.25 d |
 | 3 | Session 3: `enrich.py` + `eval_intents.py`; smoke on 20 tweets | 0.5 d |
 | 4 | Session 4: `build_index.py`, `retrieve.py`, `peek_retrieval.py` | 0.25 d |
 | 5 | Session 5: `draft.py`, `rules.py`, `check.py`, `run.py`, `api/main.py`; curl smoke test | 0.75 d |
 | 6 | Session 6: baselines, `run_eval.py`, `metrics.py`, `judge.py`, `kappa.py` — runs end-to-end on the unlabelled sample with dummy labels to prove the harness works | 0.75 d |
 | 7 | **Manual:** read 100 threads + 100 informative pairs → revise `taxonomy.py` | 0.5 d |
-| 8 | **Manual:** label the 200-row golden set; second labeller 50 rows | 1 d |
+| 8 | **Manual:** label the 150-row golden set; second labeller 50 rows | 1 d |
 | 9 | **Manual:** replace placeholder help articles with hand-checked paraphrases; `make index` | 0.5 d |
 | 10 | Re-run `make eval` on real labels; set `AMOUNT_LIMIT`, `AUTO_ALLOW`; hand-score 40 replies | 0.5 d |
 | 11 | REPORT.md, DECISIONS.md, README, Docker Compose, `make reproduce` timed | 1 d |

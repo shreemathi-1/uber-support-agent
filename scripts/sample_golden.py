@@ -1,5 +1,5 @@
 """
-Draw the 200-row unlabelled golden set from data/uber_threads.jsonl and remove those tweets from the retrieval corpus.
+Draw the 150-row unlabelled golden set from data/uber_threads.jsonl and remove those tweets from the retrieval corpus.
 Label columns are left empty on purpose: a human fills them (CLAUDE.md rule 2). Keyword buckets only steer coverage.
 """
 import argparse
@@ -14,7 +14,7 @@ from scripts.validate_data import is_english
 
 DATA = Path("data")
 SEED = 42
-N_ROWS = 200
+N_ROWS = 150
 MIN_PER_BUCKET = 15
 MIN_CHARS = 20
 LABEL_COLUMNS = ["intent", "sentiment", "urgency", "escalate", "reason", "ideal_reply_notes", "labeller"]

@@ -1,0 +1,172 @@
+[
+  {
+    "system": "trivial",
+    "n": 150,
+    "silver_labels": null,
+    "intent": {
+      "n": 147,
+      "accuracy": 0.1701,
+      "macro_f1": 0.0363,
+      "per_class": {
+        "fare_dispute": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 22
+        },
+        "trip_or_driver_issue": {
+          "precision": 0.1701,
+          "recall": 1.0,
+          "f1": 0.2907,
+          "support": 25
+        },
+        "app_or_account_issue": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 25
+        },
+        "driver_onboarding_or_earnings": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 4
+        },
+        "uber_eats": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 21
+        },
+        "lost_item": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 10
+        },
+        "policy_or_info_question": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 13
+        },
+        "other": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 25
+        }
+      },
+      "confusion": {
+        "labels": [
+          "fare_dispute",
+          "trip_or_driver_issue",
+          "app_or_account_issue",
+          "driver_onboarding_or_earnings",
+          "uber_eats",
+          "lost_item",
+          "policy_or_info_question",
+          "other"
+        ],
+        "matrix": [
+          [
+            0,
+            22,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            25,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            25,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            4,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            21,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            10,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            13,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            25,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ]
+        ]
+      }
+    },
+    "escalation": {
+      "n": 146,
+      "precision": 0.8151,
+      "recall": 1.0,
+      "f1": 0.8981,
+      "by_reason": {
+        "trivial_always": {
+          "count": 146,
+          "true_escalations": 119,
+          "false_escalations": 27
+        }
+      }
+    },
+    "auto_handle_rate": 0.0,
+    "judge": null,
+    "mean_latency_ms": 0
+  }
+]

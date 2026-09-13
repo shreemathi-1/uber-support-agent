@@ -170,7 +170,7 @@ function MetricsTile() {
             {cell("judge /25", ours?.judge?.mean_total, 1)}
           </div>
           <p className="text-[11px] text-neutral-500 mt-1">
-            Scored on the hand-labelled golden set (200 sampled 2016–17 tweets), not on the tickets listed here.
+            Scored on the hand-labelled golden set (150 tweets from 2014–17), not on the tickets listed here.
             {ours && !ours.intent && " Labels are still empty, so accuracy and F1 are blank."}
           </p>
         </>

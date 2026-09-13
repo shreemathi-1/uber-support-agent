@@ -34,9 +34,10 @@
     "informative_share": 0.1361
   },
   "golden_set": {
-    "rows": 200,
-    "with_history": 54,
+    "rows": 150,
+    "with_history": 45,
     "seed": 42,
-    "removed_from_corpus": 0
+    "removed_from_corpus": 0,
+    "note": "trimmed to the 150 labelled rows on 2026-09-13; 50 unlabelled rows dropped (their tweets stay out of the corpus)"
   }
 }
