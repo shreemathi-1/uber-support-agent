@@ -46,7 +46,7 @@ Key sentence from the video, adopted verbatim as design principle: *"The AI hand
 ```
 CLIENT   React + Vite + Tailwind      Uber Help chat screen  |  Specialist queue view
             |  JSON                              |                       |
-BACKEND  FastAPI (Docker)             POST /chat  ·  GET /escalations  ·  GET /health
+BACKEND  FastAPI                      POST /chat  ·  GET /escalations  ·  GET /health
             |
          Pipeline run.py              enrich → rules → retrieve → draft → check
             |            |            |
@@ -99,8 +99,8 @@ OFFLINE  extract_uber.py → build_index.py → data/chroma/   ·   golden_set.c
 | Storage | SQLite (stdlib) | tickets, escalations, llm_cache |
 | Eval | scikit-learn, pandas, matplotlib | |
 | Frontend | React 18 + Vite + Tailwind | Vercel free, optional |
-| Hosting | HF Spaces (Docker) | optional demo link; graders run locally |
-| Repro | Docker Compose + Makefile, `CACHE_ONLY=1` | zero API keys needed |
+| Hosting | none — graders run locally | optional hosted demo dropped, see `docs/DECISIONS.md` #56 |
+| Repro | plain `venv` + Makefile, `CACHE_ONLY=1` | zero API keys needed |
 
 Not used, on purpose: LangChain, LangGraph, hosted vector DBs, paid APIs, ORMs.
 
@@ -184,7 +184,7 @@ Extraction is done (`stats.json` present). Manual data work is deferred; the pip
 | 8 | **Manual:** label the 150-row golden set; second labeller 50 rows | 1 d |
 | 9 | **Manual:** replace placeholder help articles with hand-checked paraphrases; `make index` | 0.5 d |
 | 10 | Re-run `make eval` on real labels; set `AMOUNT_LIMIT`, `AUTO_ALLOW`; hand-score 40 replies | 0.5 d |
-| 11 | REPORT.md, DECISIONS.md, README, Docker Compose, `make reproduce` timed | 1 d |
+| 11 | REPORT.md, DECISIONS.md, README, `make reproduce` timed | 1 d |
 | 12 | React UI (chat + queue) | remaining |
 
 Rule: any number computed before step 8 is a **plumbing check**, not a result. Headline numbers come only from real labels and hand-checked articles.
@@ -201,7 +201,7 @@ uber-support-agent/
   eval/        run_eval.py  metrics.py  judge.py  kappa.py  results/
   frontend/    React + Vite + Tailwind
   report/      REPORT.md  DECISIONS.md
-  Dockerfile  docker-compose.yml  Makefile  requirements.txt  .env.example  README.md
+  Makefile  requirements.txt  .env.example  README.md
 ```
 
 `.env.example`: `GROQ_API_KEY`, `GEMINI_API_KEY`, `PRIMARY_MODEL`, `FALLBACK_MODEL`, `CACHE_ONLY`.

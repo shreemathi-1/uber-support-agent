@@ -436,9 +436,8 @@ docs/           PROJECT_PLAN.md, DECISIONS.md, TRACE_SPEC.md, BORROWED.md, HANDB
 1. **Fix the invalid label values** in the golden set (junk intents, blank or non-y/n escalate, free-text reasons, empty labeller). Second labeller on 50 rows.
 2. **Replace the 12 placeholder help articles** with hand-checked paraphrases, set `date_checked`, `make index`.
 3. **Run `make eval` after the Groq daily reset**: fits the simple baseline from the cached silver labels, runs the system and the judge; then hand-score 40 replies and set `AMOUNT_LIMIT` and `AUTO_ALLOW` from the per-reason precision.
-4. **Time `make reproduce`** on a clean clone; must be under 15 minutes with no keys.
-5. **Write `README.md` and `docs/REPORT.md`**, add `Dockerfile` and `docker-compose.yml` (planned, not yet present).
-6. Optional: revisit the 0.6 retrieval distance cutoff with `peek_retrieval.py` output; consider storing real token usage in the cache.
+4. **Write `docs/REPORT.md`**: problem framing, baselines, failure analysis, what's misleading about the headline number, what's next.
+5. Optional: revisit the 0.6 retrieval distance cutoff with `peek_retrieval.py` output; consider storing real token usage in the cache.
 
 ---
 

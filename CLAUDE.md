@@ -68,7 +68,7 @@ eval/        run_eval.py  metrics.py  judge.py  kappa.py  results/
 frontend/    (last)
 docs/        PROJECT_PLAN.md  BORROWED.md  REPORT.md  DECISIONS.md
 tests/       test_cache.py  test_rules.py  test_models.py
-Dockerfile  docker-compose.yml  Makefile  requirements.txt  .env.example  README.md
+Makefile  requirements.txt  .env.example  README.md
 ```
 
 ## Data facts (from `data/stats.json`)
