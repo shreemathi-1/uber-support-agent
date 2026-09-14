@@ -93,12 +93,12 @@ INTENT_DEFINITIONS: dict[Intent, dict] = {
     },
 }
 
-# Escalation configuration — PROVISIONAL, set from golden-set results later.
+# Escalation configuration 
 AMOUNT_LIMIT: float = 10.0
 AUTO_ALLOW: set[Intent] = {
     Intent.POLICY_OR_INFO_QUESTION,
     Intent.DRIVER_ONBOARDING_OR_EARNINGS,
     Intent.APP_OR_ACCOUNT_ISSUE,
     Intent.LOST_ITEM,
-    Intent.OTHER,  # canned reply in run.py, no draft: escalating "thanks" wastes a specialist
+    Intent.OTHER,  
 }
